@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Homework 4</title>
+
+  <style>
+    .submitcolor {
+      background-color: #eaedef;
+      border: 1px solid #848689;
+      border-radius: 4px;
+    }
+
+    body {
+      text-align: center;
+      vertical-align: top;
+    }
+
+    header {
+      padding-top: 150px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    function getOutput() {
+      var url = document.forms["truckingForm"]["filename"].value;
+      var validated = validateForm(url);
+      if (validated) {
+        getTruckingResults(url);
+      }
+    }
+
+    function validateForm(url) {
+      if (url == "") {
+        alert("Text box is empty. Please enter valid json filename");
+        return false;
+      }
+      return true;
+    }
+
+    function getTruckingResults(url) {
+      var xhttp;
+      if (window.XMLHttpRequest) {
+        xhttp = new XMLHttpRequest();
+      } else {
+        xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+      }
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          if (this.status == 404) {
+            alert("JSON file doesn't exist");
+            return;
+          } else if (this.status == 200) {
+            displayResults(this.responseText);
+          } else {
+            alert("An error has occurred");
+          }
+        }
+      };
+      xhttp.open("GET", url, false);
+      try {
+        xhttp.send();
+      } catch (exception) {
+        if (exception.name == 'NetworkError') {
+          alert("File doesn't exist.");
+          return;
+        }
+      }
+    }
+
+    function displayResults(json) {
+      var html = getHTML(json);
+      if (typeof html === 'boolean' && html === false)
+        return;
+
+      newWindow = window.open("", "New Window Title",
+        "location=1,status=1,scrollbars=1,width=950,height=750");
+      newWindow.document.write(html);
+    }
+
+    function getHTML(json) {
+      try {
+        var jsonObj = JSON.parse(json);
+      } catch (exception) {
+        alert("File cannot be parsed as it is not JSON file");
+        return false;
+      }
+      try {
+        var data = jsonObj.Mainline.Table.Header.Data;
+        var html = "<!DOCTYPE html><html>";
+        html += "<style> table,th,td { border: 1px solid black}";
+        html += "img { max-height:250px;max-width:200px;";
+        html += "min-height:100px;min-width:200px}";
+        html += " </style>";
+        html += "<body>";
+        html += "<link rel='stylesheet' ";
+        html += "href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'>";
+
+        html += "<table  class='table'>";
+        html += "<tr align='center'>";
+        for (i = 0; i < data.length; i++) {
+          html += "<td><b>" + data[i] + "</b></td>";
+        }
+        html += "</tr>";
+        var row = jsonObj.Mainline.Table.Row;
+        if (row == undefined || row.length == 0) {
+          alert("empty json file");
+          return false;
+        }
+
+        for (j = 0; j < row.length; j++) {
+          html += "<tr>";
+          html += "<td>" + row[j].Company + "</td>";
+          html += "<td>" + row[j].Services + "</td>";
+          html += "<td>";
+          var location = row[j].Hubs;
+          if (location != undefined) {
+            html += "<ul>";
+            if (location.Hub == undefined) {} else {
+              for (k = 0; k < location.Hub.length; k++) {
+                if (location.Hub[k].length == 0) {} else {
+                  if (k == 0) {
+                    html += "<b><li>" + location.Hub[k] + "</li></b>";
+                  } else {
+                    html += "<li>";
+                    html += location.Hub[k] + "</li>";
+                  }
+                }
+              }
+              html += "</ul>";
+              html += "</td>";
+            }
+          }
+          html += "<td>" + row[j].Revenue + "</td>";
+          html += "<td><a href=" + row[j].HomePage + ">";
+          html += row[j].HomePage + "</td>";
+          html += "<td>";
+          if (row[j].Logo.length != 0) {
+            html += "<img src=" + row[j].Logo + ">";
+          }
+          html += "</td>";
+          html += "</tr>";
+        }
+        html += "</table></body>";
+
+        html += "</html>";
+        return html;
+      } catch (exception) {
+        alert("Error");
+        return false;
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h3>Enter URL for Trucking List JSON File</h3>
+    </header>
+
+    <div class="content">
+      <div class="row">
+        <div class="col-sm-4"></div>
+        <div class="col-sm-4">
+          <div class="form-group">
+            <form name="truckingForm" onsubmit="getOutput()" method="GET">
+              <input type="text" name="filename" class="form-control">
+              <br>
+              <input type="submit" value="Submit Query" class="submitcolor btn btn-default">
+            </form>
+          </div>
+        </div>
+        <div class="col-sm-4"></div>
+      </div>
+    </div>
+    <br>
+    <br><br>
+  </div>
+</body>
+
+</html>
