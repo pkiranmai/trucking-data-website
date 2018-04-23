@@ -1,5 +1,9 @@
 # Trucking Data Website
 
+### View Project
+
+https://pkiranmai.github.io/trucking-data-website/
+
 ### Technologies:
 - JavaScript
 - CSS
